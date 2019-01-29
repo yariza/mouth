@@ -1,0 +1,27 @@
+{
+  "name": "flow",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "webpack-dev-server --open --config webpack.dev.js --https --cert=/Users/ya/.localhost-ssl/cert.pem --key=/Users/ya/.localhost-ssl/key.pem",
+    "build": "webpack --config webpack.prod.js",
+    "deploy": "webpack --config webpack.prod.js && cd dist && git add --all && git commit -m \"deploy\" && git push origin master && cd .."
+  },
+  "repository": "git@github.com:yariza/flow.git",
+  "author": "Yujin Ariza <yujin.ariza@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7.2.2",
+    "babel-loader": "^8.0.5",
+    "clean-webpack-plugin": "^1.0.0",
+    "copy-webpack-plugin": "^4.6.0",
+    "css-loader": "^2.1.0",
+    "file-loader": "^3.0.1",
+    "stats-js": "^1.0.0",
+    "style-loader": "^0.23.1",
+    "webpack": "^4.28.4",
+    "webpack-cli": "^3.2.1",
+    "webpack-dev-server": "^3.1.14",
+    "webpack-merge": "^4.2.1"
+  }
+}
