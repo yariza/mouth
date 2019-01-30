@@ -7,7 +7,7 @@ function lerp(v0, v1, t) {
 const handsfree = new Handsfree({
     maxPoses: 1,
     hideCursor: true,
-    // debug: true,
+    debug: true,
 });
 handsfree.start();
 
@@ -68,12 +68,9 @@ window.onload = () => {
             let eyeDist = new paper.Point(
                 points[39].x - points[42].x,
                 points[39].y - points[42].y,
-            );
-            eyeDist.x *= eyeDist.x;
-            eyeDist.y *= eyeDist.y;
-            let eyeScale = Math.sqrt(eyeDist.x + eyeDist.y);
+            ).length;
             let screenWidth = 0.2 * paper.view.size.width;
-            let scale = screenWidth / eyeScale;
+            let scale = screenWidth / eyeDist;
 
             let getPos = (point) => {
                 let pos = new paper.Point(point.x, point.y);
@@ -116,7 +113,6 @@ window.onload = () => {
             ).add(paper.view.center);
         }
 
-        
         lipsOuterPath.segments = lipsOuter;
         lipsOuterPath.smooth({ from: 1, to: 6 });
         lipsOuterPath.smooth({ from: 7, to: 0 });
@@ -131,5 +127,68 @@ window.onload = () => {
     }
 
     paper.view.draw();
+
+    var port = new osc.WebSocketPort({
+        url: "ws://localhost:8081"
+    });
+    port.on("message", function (oscMessage) {
+        $("#message").text(JSON.stringify(oscMessage, undefined, 2));
+        console.log("message", oscMessage);
+    });
+    port.open();
+    var sayHello = function () {
+        console.log("hello");
+        port.send({
+            address: "/hello",
+            args: ["world"]
+        });
+    };
+
+    window.addEventListener('handsfree:trackPoses', (ev) => {
+        let points = ev.detail.poses[0].face.points;
+        let eyeDist = new paper.Point(
+            points[39].x - points[42].x,
+            points[39].y - points[42].y,
+        ).length;
+        
+        let mouthHeight = new paper.Point(
+            points[62].x - points[66].x,
+            points[62].y - points[66].y
+        ).length / eyeDist;
+
+        let mouthWidth = new paper.Point(
+            points[60].x - points[64].x,
+            points[60].y - points[64].y
+        ).length / eyeDist;
+
+        port.send({
+            address: '/mouth/height',
+            args: [{
+                type: 'f',
+                value: mouthHeight
+            }]
+        });
+        port.send({
+            address: '/mouth/width',
+            args: [{
+                type: 'f',
+                value: mouthWidth
+            }]
+        });
+        port.send({
+            address: '/rotation/z',
+            args: [{
+                type: 'f',
+                value: Math.abs(ev.detail.poses[0].face.rotationZ)
+            }]
+        });
+        port.send({
+            address: '/rotation/y',
+            args: [{
+                type: 'f',
+                value: ev.detail.poses[0].face.rotationY
+            }]
+        });
+    });
 }
 
